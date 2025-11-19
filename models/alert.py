@@ -27,7 +27,7 @@ class Alert(BaseModel):
     is_triggered = Column(Integer, nullable=False, default=0)  # Boolean as int
     triggered_date = Column(DateTime, nullable=True)
     notification_sent = Column(Integer, nullable=False, default=0)  # Boolean as int
-    metadata = Column(Text, nullable=True)  # JSON string for additional data
+    alert_metadata = Column(Text, nullable=True)  # JSON string for additional data
 
     @validates('alert_type')
     def validate_alert_type(self, key: str, value: str) -> str:

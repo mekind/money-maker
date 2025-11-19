@@ -13,15 +13,13 @@ sys.path.insert(0, str(project_root))
 
 from config import settings
 from models import init_db
+from utils import show_navigation
 from loguru import logger
 
 
 # Configure logger
 logger.add(
-    "logs/app.log",
-    rotation="1 day",
-    retention="7 days",
-    level=settings.LOG_LEVEL
+    "logs/app.log", rotation="1 day", retention="7 days", level=settings.LOG_LEVEL
 )
 
 
@@ -42,7 +40,7 @@ def configure_page():
         page_title=settings.APP_NAME,
         page_icon="💰",
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="expanded",
     )
 
 
@@ -52,8 +50,7 @@ def main():
     init_application()
 
     # Sidebar navigation
-    st.sidebar.title("📊 Navigation")
-    st.sidebar.markdown("---")
+    show_navigation()
 
     # Main title
     st.title(f"💰 {settings.APP_NAME}")
@@ -61,7 +58,8 @@ def main():
     st.markdown("---")
 
     # Welcome message
-    st.info("""
+    st.info(
+        """
     👋 **Welcome to your Money Management Service!**
 
     This application helps you make informed investment decisions through:
@@ -72,21 +70,33 @@ def main():
     - 🔔 Custom alerts and notifications
 
     👈 **Navigate using the sidebar** to access different features.
-    """)
+    """
+    )
 
     # Quick stats (if portfolios exist)
     st.markdown("### 🚀 Quick Start")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.info("**1. Create Portfolio**\n\nGo to Portfolio page to create your first portfolio")
+        st.info(
+            "**1. Research Investments**\n\nUse Investment Analysis to find buy opportunities"
+        )
 
     with col2:
-        st.info("**2. Get Recommendations**\n\nVisit Recommendations page for AI-powered insights")
+        st.info(
+            "**2. Create Portfolio**\n\nGo to Portfolio page to create your first portfolio"
+        )
 
     with col3:
-        st.info("**3. Monitor Risk**\n\nCheck Risk Analysis for portfolio health metrics")
+        st.info(
+            "**3. Get Recommendations**\n\nVisit Recommendations page for AI-powered insights"
+        )
+
+    with col4:
+        st.info(
+            "**4. Monitor Risk**\n\nCheck Risk Analysis for portfolio health metrics"
+        )
 
     # Footer
     st.markdown("---")
@@ -95,7 +105,7 @@ def main():
         f"Environment: {settings.APP_ENV.upper()} | "
         f"Version: 1.0.0"
         f"</div>",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 

@@ -17,10 +17,7 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )
 
     # Application Configuration
@@ -76,7 +73,7 @@ class Settings(BaseSettings):
     ENABLE_ALERTS: bool = Field(default=True)
     ENABLE_BACKTESTING: bool = Field(default=True)
 
-    @field_validator('LOG_LEVEL')
+    @field_validator("LOG_LEVEL")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
         """Validate log level."""
@@ -86,7 +83,7 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid LOG_LEVEL. Must be one of {valid_levels}")
         return v_upper
 
-    @field_validator('APP_ENV')
+    @field_validator("APP_ENV")
     @classmethod
     def validate_app_env(cls, v: str) -> str:
         """Validate application environment."""
@@ -96,7 +93,7 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid APP_ENV. Must be one of {valid_envs}")
         return v_lower
 
-    @field_validator('MIN_CONFIDENCE_THRESHOLD')
+    @field_validator("MIN_CONFIDENCE_THRESHOLD")
     @classmethod
     def validate_confidence_threshold(cls, v: float) -> float:
         """Validate confidence threshold is between 0 and 1."""
@@ -104,8 +101,12 @@ class Settings(BaseSettings):
             raise ValueError("MIN_CONFIDENCE_THRESHOLD must be between 0 and 1")
         return v
 
-    @field_validator('DEFAULT_POSITION_SIZE_PERCENT', 'MAX_POSITION_SIZE_PERCENT',
-                     'DEFAULT_STOP_LOSS_PERCENT', 'TRANSACTION_COST_PERCENT')
+    @field_validator(
+        "DEFAULT_POSITION_SIZE_PERCENT",
+        "MAX_POSITION_SIZE_PERCENT",
+        "DEFAULT_STOP_LOSS_PERCENT",
+        "TRANSACTION_COST_PERCENT",
+    )
     @classmethod
     def validate_percentage(cls, v: float) -> float:
         """Validate percentage values are between 0 and 1."""
@@ -136,11 +137,11 @@ class SettingsManager:
     Ensures only one settings instance exists throughout the application.
     """
 
-    _instance: Optional['SettingsManager'] = None
+    _instance: Optional["SettingsManager"] = None
     _lock: Lock = Lock()
     _settings: Optional[Settings] = None
 
-    def __new__(cls) -> 'SettingsManager':
+    def __new__(cls) -> "SettingsManager":
         """
         Thread-safe singleton implementation.
 

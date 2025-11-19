@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from threading import Lock
 import yfinance as yf
 import pandas as pd
-import pandas_ta as ta
+import ta
 from services.base_service import BaseService
 
 
@@ -141,41 +141,47 @@ class MarketDataService(BaseService):
             if data is None or data.empty:
                 return None
 
-            # Calculate indicators using pandas_ta
+            # Calculate indicators using ta library
             indicators = {}
 
             # Moving Averages
-            data.ta.sma(length=20, append=True)
-            data.ta.sma(length=50, append=True)
-            data.ta.sma(length=200, append=True)
-            data.ta.ema(length=12, append=True)
-            data.ta.ema(length=26, append=True)
+            data['SMA_20'] = ta.trend.sma_indicator(data['Close'], window=20)
+            data['SMA_50'] = ta.trend.sma_indicator(data['Close'], window=50)
+            data['SMA_200'] = ta.trend.sma_indicator(data['Close'], window=200)
+            data['EMA_12'] = ta.trend.ema_indicator(data['Close'], window=12)
+            data['EMA_26'] = ta.trend.ema_indicator(data['Close'], window=26)
 
-            indicators['SMA_20'] = float(data['SMA_20'].iloc[-1]) if 'SMA_20' in data else None
-            indicators['SMA_50'] = float(data['SMA_50'].iloc[-1]) if 'SMA_50' in data else None
-            indicators['SMA_200'] = float(data['SMA_200'].iloc[-1]) if 'SMA_200' in data else None
-            indicators['EMA_12'] = float(data['EMA_12'].iloc[-1]) if 'EMA_12' in data else None
-            indicators['EMA_26'] = float(data['EMA_26'].iloc[-1]) if 'EMA_26' in data else None
+            indicators['SMA_20'] = float(data['SMA_20'].iloc[-1]) if not data['SMA_20'].isna().iloc[-1] else None
+            indicators['SMA_50'] = float(data['SMA_50'].iloc[-1]) if not data['SMA_50'].isna().iloc[-1] else None
+            indicators['SMA_200'] = float(data['SMA_200'].iloc[-1]) if not data['SMA_200'].isna().iloc[-1] else None
+            indicators['EMA_12'] = float(data['EMA_12'].iloc[-1]) if not data['EMA_12'].isna().iloc[-1] else None
+            indicators['EMA_26'] = float(data['EMA_26'].iloc[-1]) if not data['EMA_26'].isna().iloc[-1] else None
 
             # RSI (Relative Strength Index)
-            data.ta.rsi(length=14, append=True)
-            indicators['RSI_14'] = float(data['RSI_14'].iloc[-1]) if 'RSI_14' in data else None
+            data['RSI_14'] = ta.momentum.rsi(data['Close'], window=14)
+            indicators['RSI_14'] = float(data['RSI_14'].iloc[-1]) if not data['RSI_14'].isna().iloc[-1] else None
 
             # MACD
-            data.ta.macd(append=True)
-            indicators['MACD'] = float(data['MACD_12_26_9'].iloc[-1]) if 'MACD_12_26_9' in data else None
-            indicators['MACD_signal'] = float(data['MACDs_12_26_9'].iloc[-1]) if 'MACDs_12_26_9' in data else None
-            indicators['MACD_histogram'] = float(data['MACDh_12_26_9'].iloc[-1]) if 'MACDh_12_26_9' in data else None
+            macd = ta.trend.MACD(data['Close'])
+            data['MACD'] = macd.macd()
+            data['MACD_signal'] = macd.macd_signal()
+            data['MACD_histogram'] = macd.macd_diff()
+            indicators['MACD'] = float(data['MACD'].iloc[-1]) if not data['MACD'].isna().iloc[-1] else None
+            indicators['MACD_signal'] = float(data['MACD_signal'].iloc[-1]) if not data['MACD_signal'].isna().iloc[-1] else None
+            indicators['MACD_histogram'] = float(data['MACD_histogram'].iloc[-1]) if not data['MACD_histogram'].isna().iloc[-1] else None
 
             # Bollinger Bands
-            data.ta.bbands(length=20, append=True)
-            indicators['BB_upper'] = float(data['BBU_20_2.0'].iloc[-1]) if 'BBU_20_2.0' in data else None
-            indicators['BB_middle'] = float(data['BBM_20_2.0'].iloc[-1]) if 'BBM_20_2.0' in data else None
-            indicators['BB_lower'] = float(data['BBL_20_2.0'].iloc[-1]) if 'BBL_20_2.0' in data else None
+            bollinger = ta.volatility.BollingerBands(data['Close'], window=20, window_dev=2)
+            data['BB_upper'] = bollinger.bollinger_hband()
+            data['BB_middle'] = bollinger.bollinger_mavg()
+            data['BB_lower'] = bollinger.bollinger_lband()
+            indicators['BB_upper'] = float(data['BB_upper'].iloc[-1]) if not data['BB_upper'].isna().iloc[-1] else None
+            indicators['BB_middle'] = float(data['BB_middle'].iloc[-1]) if not data['BB_middle'].isna().iloc[-1] else None
+            indicators['BB_lower'] = float(data['BB_lower'].iloc[-1]) if not data['BB_lower'].isna().iloc[-1] else None
 
             # Volume indicators
-            data.ta.obv(append=True)
-            indicators['OBV'] = float(data['OBV'].iloc[-1]) if 'OBV' in data else None
+            data['OBV'] = ta.volume.on_balance_volume(data['Close'], data['Volume'])
+            indicators['OBV'] = float(data['OBV'].iloc[-1]) if not data['OBV'].isna().iloc[-1] else None
 
             # Current price
             indicators['current_price'] = float(data['Close'].iloc[-1])
